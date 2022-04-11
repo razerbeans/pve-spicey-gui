@@ -12,9 +12,6 @@ from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QDialog,
 from ..vdi_client.client import Client
 
 class Gui(QDialog):
-  num_grid_rows = 3
-  num_buttons = 4
-
   def __init__(self):
     super().__init__()
 
@@ -29,6 +26,7 @@ class Gui(QDialog):
 
     self._vm_dropdown = QComboBox()
     self._vm_dropdown.setDisabled(True)
+    self._vm_dropdown.setFixedWidth(300)
     
     self._client = None
 
@@ -40,6 +38,7 @@ class Gui(QDialog):
     button_box.rejected.connect(self.reject)
 
     main_layout = QVBoxLayout()
+    main_layout.setStretch(0, 2)
     main_layout.addWidget(self.horizontal_credentials_element())
     main_layout.addWidget(self.vm_list_element())
     main_layout.addWidget(button_box)
