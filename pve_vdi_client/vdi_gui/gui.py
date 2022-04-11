@@ -85,7 +85,7 @@ class Gui(QDialog):
     self._authentication_message_box.exec()
 
   def _fetch_vms(self):
-    vms = self._client.cluster_vms()
+    vms = self._client.get_vms(include_config=True, vga="qxl")
     self._vm_dropdown.addItems(sorted(["{}-{}".format(vm['vmid'], vm['name']) for vm in vms]))
     self._vm_dropdown.setEnabled(True)
 
