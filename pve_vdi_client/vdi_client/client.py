@@ -4,8 +4,6 @@ from proxmoxer import ProxmoxAPI
 from subprocess import Popen
 
 class Client(ProxmoxAPI):
-  pass
-
   def spice_proxy(self, **vmkwargs):
     vm = self.get_vm(**vmkwargs)
     return self.nodes(vm['node']).qemu(vm['vmid']).spiceproxy.post(proxy=vm['node'])
