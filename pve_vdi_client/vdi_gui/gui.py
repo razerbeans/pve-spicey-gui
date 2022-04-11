@@ -3,10 +3,11 @@
 import sys
 
 from decouple import config
+from proxmoxer.backends.https import AuthenticationError
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QDialog,
                                QDialogButtonBox, QGridLayout, QGroupBox,
-                               QFormLayout, QHBoxLayout, QLabel, QLineEdit,
+                               QFormLayout, QMessageBox, QLabel, QLineEdit,
                                QMenu, QMenuBar, QPushButton, QSpinBox,
                                QTextEdit, QVBoxLayout, QWidget)
 
@@ -19,9 +20,11 @@ class Gui(QDialog):
     self._server_input = QLineEdit()
     self._server_input.setFixedWidth(250)
     self._server_input.setText(config('SERVER', default=None))
+
     self._user_input = QLineEdit()
     self._user_input.setFixedWidth(250)
     self._user_input.setText(config('USERNAME', default=None))
+
     password_box = QLineEdit()
     password_box.setFixedWidth(250)
     password_box.setEchoMode(QLineEdit.Password)
@@ -34,6 +37,8 @@ class Gui(QDialog):
     self._vm_dropdown = QComboBox()
     self._vm_dropdown.setDisabled(True)
     self._vm_dropdown.setFixedWidth(300)
+
+    self._authentication_message_box = QMessageBox()
     
     self._client = None
 
@@ -72,16 +77,28 @@ class Gui(QDialog):
     _horizontal_group_box.setLayout(layout)
     return _horizontal_group_box
 
+  def show_message_box(self, text=None, informative_text=None):
+    if text:
+      self._authentication_message_box.setText(text)
+    if informative_text:
+      self._authentication_message_box.setInformativeText(informative_text)
+    self._authentication_message_box.exec()
+
   def _fetch_vms(self):
     vms = self._client.cluster_vms()
     self._vm_dropdown.addItems(sorted(["{}-{}".format(vm['vmid'], vm['name']) for vm in vms]))
     self._vm_dropdown.setEnabled(True)
 
   def _set_client(self):
-    self._client = Client(host=self._server_input.text(),
-                          user=self._user_input.text(),
-                          password=self._password_input.text())
-    self._fetch_vms()
+    try:
+      self._client = Client(host=self._server_input.text(),
+                            user=self._user_input.text(),
+                            password=self._password_input.text())
+      self._fetch_vms()
+    except AuthenticationError as e:
+      self.show_message_box(text="Authentication Error!", informative_text=str(e))
+    except Exception as e:
+      self.show_message_box(text="Unhandled Error", informative_text=str(e))
     return None
 
   def _connect_to_vm(self):
