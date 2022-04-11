@@ -2,6 +2,7 @@
 
 import sys
 
+from decouple import config
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QDialog,
                                QDialogButtonBox, QGridLayout, QGroupBox,
@@ -16,9 +17,15 @@ class Gui(QDialog):
     super().__init__()
 
     self._server_input = QLineEdit()
+    self._server_input.setFixedWidth(250)
+    self._server_input.setText(config('SERVER', default=None))
     self._user_input = QLineEdit()
+    self._user_input.setFixedWidth(250)
+    self._user_input.setText(config('USERNAME', default=None))
     password_box = QLineEdit()
+    password_box.setFixedWidth(250)
     password_box.setEchoMode(QLineEdit.Password)
+    password_box.setText(config('PASSWORD', default=None))
     self._password_input = password_box
     
     self._fetch_button = QPushButton("Fetch VMs")
@@ -44,7 +51,7 @@ class Gui(QDialog):
     main_layout.addWidget(button_box)
     self.setLayout(main_layout)
 
-    self.setWindowTitle("Basic Layouts")
+    self.setWindowTitle("PVE VDI Client")
 
   def horizontal_credentials_element(self):
     _horizontal_group_box = QGroupBox("Credentials")
@@ -65,12 +72,10 @@ class Gui(QDialog):
     _horizontal_group_box.setLayout(layout)
     return _horizontal_group_box
 
-
   def _fetch_vms(self):
     vms = self._client.cluster_vms()
     self._vm_dropdown.addItems(sorted(["{}-{}".format(vm['vmid'], vm['name']) for vm in vms]))
     self._vm_dropdown.setEnabled(True)
-    self.button_box.accepted.setEnabled(True)
 
   def _set_client(self):
     self._client = Client(host=self._server_input.text(),
@@ -82,6 +87,7 @@ class Gui(QDialog):
   def _connect_to_vm(self):
     vm_id = int(self._vm_dropdown.currentText().split("-")[0])
     self._client.spice_connect(vmid=vm_id)
+
 
 if __name__ == '__main__':
   app = QApplication(sys.argv)
