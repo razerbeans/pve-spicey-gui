@@ -92,7 +92,7 @@ class Gui(QDialog):
 
   def _fetch_vms(self):
     if self._filter_checkbox.isChecked():
-      vms = self._client.get_vms(include_config=True, vga="qxl")
+      vms = self._client.get_vms(include_config=True, vga=r"qxl.*")
     else:
       vms = self._client.get_vms()
     self._vm_dropdown.clear()
