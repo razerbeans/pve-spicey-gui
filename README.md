@@ -20,6 +20,7 @@ python -m pve_vdi_client.vdi_gui.gui
 ```
 
 # Development
+## Getting started
 
 Run the following to get things set up:
 
@@ -37,3 +38,16 @@ python -m pve_vdi_client <pve_vmid>
 ```
 
 Have fun!
+
+## Publishing
+To publish packages to PyPi, you'll need to have a .pypirc file configured. If you need help with that, check out [this guide](https://packaging.python.org/en/latest/specifications/pypirc/). First off, build the distributable packages:
+
+```
+python -m build
+```
+
+Once the package is built, you should have both an archive and wheel package in the `dist/` directory. Now, run the following command to upload it to the relevant repo:
+
+```
+twine upload --config-file .pypirc --repository homelab-pip dist/pve_vdi_client-0.0.2-py3-none-any.whl
+```
