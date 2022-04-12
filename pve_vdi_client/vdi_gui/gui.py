@@ -5,8 +5,8 @@ import sys
 from decouple import config
 from proxmoxer.backends.https import AuthenticationError
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QDialog,
-                               QDialogButtonBox, QGridLayout, QGroupBox,
+from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QCheckBox, 
+                               QDialog, QDialogButtonBox, QGridLayout, QGroupBox,
                                QFormLayout, QMessageBox, QLabel, QLineEdit,
                                QMenu, QMenuBar, QPushButton, QSpinBox,
                                QTextEdit, QVBoxLayout, QWidget)
@@ -30,6 +30,8 @@ class Gui(QDialog):
     password_box.setEchoMode(QLineEdit.Password)
     password_box.setText(config('PASSWORD', default=None))
     self._password_input = password_box
+
+    self._filter_checkbox = QCheckBox("SPICE-capable only (slow!)")
     
     self._fetch_button = QPushButton()
     self._update_button_to_default()
@@ -67,6 +69,7 @@ class Gui(QDialog):
     layout.addRow(QLabel("Server: "), self._server_input)
     layout.addRow(QLabel("User:"), self._user_input)
     layout.addRow(QLabel("Password:"), self._password_input)
+    layout.addRow(self._filter_checkbox)
     layout.addRow(self._fetch_button)
 
     _horizontal_group_box.setLayout(layout)
@@ -88,7 +91,11 @@ class Gui(QDialog):
     self._authentication_message_box.exec()
 
   def _fetch_vms(self):
-    vms = self._client.get_vms(include_config=True, vga="qxl")
+    if self._filter_checkbox.isChecked():
+      vms = self._client.get_vms(include_config=True, vga="qxl")
+    else:
+      vms = self._client.get_vms()
+    self._vm_dropdown.clear()
     self._vm_dropdown.addItems(sorted(["{}-{}".format(vm['vmid'], vm['name']) for vm in vms]))
     self._vm_dropdown.setEnabled(True)
 
