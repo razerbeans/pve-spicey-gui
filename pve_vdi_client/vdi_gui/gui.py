@@ -31,8 +31,11 @@ class Gui(QDialog):
     password_box.setText(config('PASSWORD', default=None))
     self._password_input = password_box
     
-    self._fetch_button = QPushButton("Fetch VMs")
-    self._fetch_button.clicked.connect(self._set_client)
+    self._fetch_button = QPushButton()
+    self._update_button_to_default()
+    self._fetch_button.pressed.connect(self._update_button_to_loading)
+    self._fetch_button.clicked.connect(self._set_client_and_fetch_vms)
+    self._fetch_button.released.connect(self._update_button_to_default)
 
     self._vm_dropdown = QComboBox()
     self._vm_dropdown.setDisabled(True)
@@ -89,16 +92,24 @@ class Gui(QDialog):
     self._vm_dropdown.addItems(sorted(["{}-{}".format(vm['vmid'], vm['name']) for vm in vms]))
     self._vm_dropdown.setEnabled(True)
 
-  def _set_client(self):
+  def _update_button_to_loading(self):
+    self._fetch_button.setText("Loading...")
+
+  def _update_button_to_default(self):
+    self._fetch_button.setText("Fetch VMs")
+
+  def _set_client_and_fetch_vms(self):
     try:
       self._client = Client(host=self._server_input.text(),
                             user=self._user_input.text(),
                             password=self._password_input.text())
       self._fetch_vms()
     except AuthenticationError as e:
-      self.show_message_box(text="Authentication Error!", informative_text=str(e))
+      self.show_message_box(text="Authentication Error!", informative_text=repr(e))
     except Exception as e:
-      self.show_message_box(text="Unhandled Error", informative_text=str(e))
+      self.show_message_box(text="Unhandled Error!", informative_text=repr(e))
+    finally:
+      self._update_button_to_default()
     return None
 
   def _connect_to_vm(self):
