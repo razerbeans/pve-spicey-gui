@@ -19,6 +19,12 @@ python -m pve_vdi_client <pve_vmid>
 python -m pve_vdi_client.vdi_gui.gui
 ```
 
+If you're planning on wanting to hear things from your VMs over SPICE when on the RPi, make sure you install the following packages. Otherwise, audio will not work:
+
+```
+sudo apt install pulseaudio gstreamer1.0-pulseaudio gstreamer1.0-alsa
+```
+
 # Development
 ## Getting started
 
