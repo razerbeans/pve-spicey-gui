@@ -14,14 +14,14 @@ class Client(ProxmoxAPI):
 
   def get_vm(self, include_config=False, **kwargs):
     for vm in self.cluster_vms(include_config=include_config):
-      if all([k in vm and re.fullmatch(v, vm[k]) for k, v in kwargs.items()]):
+      if all([k in vm and re.fullmatch(str(v), str(vm[k])) for k, v in kwargs.items()]):
         return vm
     return None
 
   def get_vms(self, include_config=False, **kwargs):
     result = []
     for vm in self.cluster_vms(include_config=include_config):
-      if all([k in vm and re.fullmatch(v, vm[k]) for k, v in kwargs.items()]):
+      if all([k in vm and re.fullmatch(str(v), str(vm[k])) for k, v in kwargs.items()]):
         result.append(vm)
     return result
 
