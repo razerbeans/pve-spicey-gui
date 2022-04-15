@@ -1,6 +1,6 @@
 [project]
 name = "pve-vdi-client"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
     "requests==2.27.1",
     "proxmoxer==1.2.0",
@@ -19,3 +19,7 @@ addopts = "-ra -q"
 testpaths = [
     "tests",
 ]
+
+[project.scripts]
+pve-vdi-client-gui = "pve_vdi_client.vdi_gui.gui:run"
+pve-vdi-client = "pve_vdi_client:run"

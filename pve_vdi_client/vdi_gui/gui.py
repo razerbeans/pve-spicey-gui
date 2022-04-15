@@ -127,7 +127,10 @@ class Gui(QDialog):
     )
 
 
-if __name__ == '__main__':
+def run():
   app = QApplication(sys.argv)
   gui = Gui()
   sys.exit(gui.exec())
+
+if __name__ == '__main__':
+  run()

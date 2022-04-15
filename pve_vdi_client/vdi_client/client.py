@@ -7,9 +7,14 @@ from subprocess import Popen
 
 from proxmoxer.core import ResourceException
 
+class ClientException(Exception):
+  pass
+
 class Client(ProxmoxAPI):
   def spice_proxy(self, **vmkwargs):
     vm = self.get_vm(**vmkwargs)
+    if not vm:
+      raise ClientException("Node not found")
     return self.nodes(vm['node']).qemu(vm['vmid']).spiceproxy.post(proxy=vm['node'])
 
   def get_vm(self, include_config=False, **kwargs):
