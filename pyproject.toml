@@ -19,3 +19,7 @@ addopts = "-ra -q"
 testpaths = [
     "tests",
 ]
+
+[project.scripts]
+pve-vdi-client-gui = "pve_vdi_client.vdi_gui.gui:run"
+pve-vdi-client = "pve_vdi_client:run"
