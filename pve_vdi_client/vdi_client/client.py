@@ -46,6 +46,6 @@ class Client(ProxmoxAPI):
       spice_config_ini_file.write(file)
     return file_out_name
 
-  def spice_connect(self, **vmkwargs):
+  def spice_connect(self, remote_viewer_bin_path='remote-viewer', **vmkwargs):
     spiceproxy_file = self.write_spice_proxy_file(**vmkwargs)
-    Popen(['remote-viewer', str(spiceproxy_file)])
+    Popen([remote_viewer_bin_path, str(spiceproxy_file)])

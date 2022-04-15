@@ -15,6 +15,9 @@ if __name__ == '__main__':
                     action="store_false",
                     default=config('VERIFY_SSL', default=True, cast=bool),
                     help="Verify server SSL certificate")
+  parser.add_option('-p', '--path', dest="remote_viwer_path", 
+                    default=config('REMOTE_VIEWER_PATH', default='remote-viewer'),
+                    help="Full path to remote-viewer executable")
   (options, args) = parser.parse_args()
   proxmox_client = Client(**vars(options))
-  proxmox_client.spice_connect(vmid=int(args[0]))
+  proxmox_client.spice_connect(remote_viewer_bin_path=options['remote_viewer_path'], vmid=int(args[0]))

@@ -67,7 +67,7 @@ class Gui(QDialog):
     _horizontal_group_box = QGroupBox("Credentials")
     layout = QFormLayout()
     layout.addRow(QLabel("Server: "), self._server_input)
-    layout.addRow(QLabel("User:"), self._user_input)
+    layout.addRow(QLabel("Username:"), self._user_input)
     layout.addRow(QLabel("Password:"), self._password_input)
     layout.addRow(self._filter_checkbox)
     layout.addRow(self._fetch_button)
@@ -121,7 +121,10 @@ class Gui(QDialog):
 
   def _connect_to_vm(self):
     vm_id = int(self._vm_dropdown.currentText().split("-")[0])
-    self._client.spice_connect(vmid=vm_id)
+    self._client.spice_connect(
+      remote_viewer_bin_path=config('REMOTE_VIEWER_PATH', 'remote-viewer'), 
+      vmid=vm_id
+    )
 
 
 if __name__ == '__main__':
