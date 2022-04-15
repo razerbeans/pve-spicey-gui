@@ -1,3 +1,5 @@
+import re
+
 from configparser import ConfigParser
 from pathlib import Path
 from proxmoxer import ProxmoxAPI
@@ -12,14 +14,14 @@ class Client(ProxmoxAPI):
 
   def get_vm(self, include_config=False, **kwargs):
     for vm in self.cluster_vms(include_config=include_config):
-      if all([k in vm and vm[k] == v for k, v in kwargs.items()]):
+      if all([k in vm and re.fullmatch(str(v), str(vm[k])) for k, v in kwargs.items()]):
         return vm
     return None
 
   def get_vms(self, include_config=False, **kwargs):
     result = []
     for vm in self.cluster_vms(include_config=include_config):
-      if all([k in vm and vm[k] == v for k, v in kwargs.items()]):
+      if all([k in vm and re.fullmatch(str(v), str(vm[k])) for k, v in kwargs.items()]):
         result.append(vm)
     return result
 
@@ -44,6 +46,6 @@ class Client(ProxmoxAPI):
       spice_config_ini_file.write(file)
     return file_out_name
 
-  def spice_connect(self, **vmkwargs):
+  def spice_connect(self, remote_viewer_bin_path='remote-viewer', **vmkwargs):
     spiceproxy_file = self.write_spice_proxy_file(**vmkwargs)
-    Popen(['remote-viewer', str(spiceproxy_file)])
+    Popen([remote_viewer_bin_path, str(spiceproxy_file)])
