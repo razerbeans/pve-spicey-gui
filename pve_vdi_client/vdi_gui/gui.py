@@ -2,6 +2,7 @@
 
 import os
 import sys
+import traceback
 
 from pve_vdi_client import CLIENT_PATHS
 
@@ -12,7 +13,7 @@ from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QCheckBox,
                                QDialog, QDialogButtonBox, QGridLayout, QGroupBox,
                                QFormLayout, QMessageBox, QLabel, QLineEdit,
                                QMenu, QMenuBar, QPushButton, QSpinBox,
-                               QTextEdit, QVBoxLayout, QWidget)
+                               QHBoxLayout, QVBoxLayout)
 
 from ..vdi_client.client import Client
 
@@ -43,14 +44,19 @@ class Gui(QDialog):
     self._filter_checkbox.setChecked(self.config['gui'].getboolean('spice_filter', False))
     
     self._fetch_button = QPushButton()
-    self._update_button_to_default()
-    self._fetch_button.pressed.connect(self._update_button_to_loading)
+    self._update_fetch_button_to_default()
+    self._fetch_button.pressed.connect(self._update_fetch_button_to_loading)
     self._fetch_button.clicked.connect(self._set_client_and_fetch_vms)
-    self._fetch_button.released.connect(self._update_button_to_default)
+    self._fetch_button.released.connect(self._update_fetch_button_to_default)
 
     self._vm_dropdown = QComboBox()
     self._vm_dropdown.setDisabled(True)
     self._vm_dropdown.setFixedWidth(300)
+    self._vm_dropdown.currentTextChanged.connect(self._toggle_favorites_button_text)
+
+    self._favorites_button = QPushButton()
+    self._favorites_button.setText("Favorite")
+    self._favorites_button.clicked.connect(self._toggle_vm_to_favorites)
 
     self._authentication_message_box = QMessageBox()
     
@@ -87,10 +93,12 @@ class Gui(QDialog):
 
   def vm_list_element(self):
     _horizontal_group_box = QGroupBox("VMs")
-    layout = QFormLayout()
-    layout.addRow(QLabel("VM: "), self._vm_dropdown)
+    form_layout = QFormLayout()
+    selection_layout = QFormLayout()
+    selection_layout.addRow(self._vm_dropdown, self._favorites_button)
+    form_layout.addRow(QLabel("VM: "), selection_layout)
 
-    _horizontal_group_box.setLayout(layout)
+    _horizontal_group_box.setLayout(form_layout)
     return _horizontal_group_box
 
   def show_message_box(self, text=None, informative_text=None):
@@ -100,20 +108,49 @@ class Gui(QDialog):
       self._authentication_message_box.setInformativeText(informative_text)
     self._authentication_message_box.exec()
 
+  def favorites_section_name(self):
+    return "favorites:{}".format(self._server_input.text())
+
+  def _toggle_vm_to_favorites(self):
+    favorites = self._get_favorites()
+    favorite_name = self._vm_dropdown.currentText()
+    if self._favorites_button.text() == "Favorite":
+      favorites.append(favorite_name)
+    if self._favorites_button.text() == "Unfavorite":
+      favorites.remove(favorite_name)
+    self.config.set(self.favorites_section_name(), 'favorites', ",".join(filter(lambda x: x != "", favorites)))
+    self._save_config()
+    self._fetch_vms()
+    self._vm_dropdown.setCurrentIndex(self._vm_dropdown.findText(favorite_name))
+
+  def _get_favorites(self):
+    if self.favorites_section_name() not in self.config.sections():
+      self.config.add_section(self.favorites_section_name())
+      self.config.set('favorites', '')
+    return self.config.get(self.favorites_section_name(), 'favorites').split(",")
+
   def _fetch_vms(self):
     if self._filter_checkbox.isChecked():
       vms = self._client.get_vms(include_config=True, vga=r"qxl.*")
     else:
       vms = self._client.get_vms()
     self._vm_dropdown.clear()
-    self._vm_dropdown.addItems(sorted(["{}-{}".format(vm['vmid'], vm['name']) for vm in vms]))
+    found_favorites = []
+    vms = ["{}-{}".format(vm['vmid'], vm['name']) for vm in vms]
+    for idx, vm in enumerate(vms):
+      if vm in self._get_favorites():
+        found_favorites.append(vms.pop(idx))
+    if found_favorites:
+      self._vm_dropdown.addItems(sorted(found_favorites))
+      self._vm_dropdown.insertSeparator(len(found_favorites))
+    self._vm_dropdown.addItems(sorted(vms))
     self._vm_dropdown.setEnabled(True)
-    self._write_config()
+    self._save_config()
 
-  def _update_button_to_loading(self):
+  def _update_fetch_button_to_loading(self):
     self._fetch_button.setText("Loading...")
 
-  def _update_button_to_default(self):
+  def _update_fetch_button_to_default(self):
     self._fetch_button.setText("Fetch VMs")
 
   def _set_client_and_fetch_vms(self):
@@ -123,11 +160,13 @@ class Gui(QDialog):
                             password=self._password_input.text())
       self._fetch_vms()
     except AuthenticationError as e:
+      traceback.print_exc()
       self.show_message_box(text="Authentication Error!", informative_text=repr(e))
     except Exception as e:
+      traceback.print_exc()
       self.show_message_box(text="Unhandled Error!", informative_text=repr(e))
     finally:
-      self._update_button_to_default()
+      self._update_fetch_button_to_default()
     return None
 
   def _connect_to_vm(self):
@@ -137,7 +176,7 @@ class Gui(QDialog):
       vmid=vm_id
     )
 
-  def _write_config(self):
+  def _save_config(self):
     self.config.set('client', 'server', self._server_input.text())
     self.config.set('client', 'username', self._user_input.text())
     self.config.set('client', 'password', self._password_input.text())
@@ -147,6 +186,12 @@ class Gui(QDialog):
       if os.path.exists(conffile):
         with open(conffile, 'w') as configfile:
           self.config.write(configfile)
+
+  def _toggle_favorites_button_text(self):
+    if self._vm_dropdown.currentText() in self._get_favorites():
+      self._favorites_button.setText("Unfavorite")
+    else:
+      self._favorites_button.setText("Favorite")
 
 
 def run():
