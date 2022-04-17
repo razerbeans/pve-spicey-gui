@@ -1,21 +1,16 @@
-"""PySide6 port of the widgets/layouts/basiclayout example from Qt v5.x"""
-
 import os
 import sys
 import traceback
 
-from pve_vdi_client import CLIENT_PATHS
-
 from configparser import RawConfigParser
 from proxmoxer.backends.https import AuthenticationError
-from PySide2.QtCore import Qt
 from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QCheckBox, 
-                               QDialog, QDialogButtonBox, QGridLayout, QGroupBox,
+                               QDialog, QDialogButtonBox, QGroupBox,
                                QFormLayout, QMessageBox, QLabel, QLineEdit,
-                               QMenu, QMenuBar, QPushButton, QSpinBox,
-                               QHBoxLayout, QVBoxLayout)
+                               QPushButton, QVBoxLayout)
 
-from ..vdi_client.client import Client
+from pve_vdi_client import CLIENT_PATHS
+from pve_vdi_client.vdi_client.client import Client
 
 class Gui(QDialog):
   def __init__(self):
@@ -42,7 +37,7 @@ class Gui(QDialog):
     self._verify_ssl_checkbox.setChecked(self.config['client'].getboolean('verify_ssl', True))
     self._filter_checkbox = QCheckBox("SPICE-capable only (slow!)")
     self._filter_checkbox.setChecked(self.config['gui'].getboolean('spice_filter', False))
-    
+
     self._fetch_button = QPushButton()
     self._update_fetch_button_to_default()
     self._fetch_button.pressed.connect(self._update_fetch_button_to_loading)
@@ -59,7 +54,7 @@ class Gui(QDialog):
     self._favorites_button.clicked.connect(self._toggle_vm_to_favorites)
 
     self._authentication_message_box = QMessageBox()
-    
+
     self._client = None
 
     self._okay_button = QDialogButtonBox.Ok
