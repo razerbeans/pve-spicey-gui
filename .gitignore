@@ -1,5 +1,6 @@
 spiceproxy
 .pypirc
+.pve_vdi_client.cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

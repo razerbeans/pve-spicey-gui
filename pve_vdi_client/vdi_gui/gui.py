@@ -1,8 +1,11 @@
 """PySide6 port of the widgets/layouts/basiclayout example from Qt v5.x"""
 
+import os
 import sys
 
-from decouple import config
+from pve_vdi_client import CLIENT_PATHS
+
+from configparser import RawConfigParser
 from proxmoxer.backends.https import AuthenticationError
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QCheckBox, 
@@ -17,21 +20,27 @@ class Gui(QDialog):
   def __init__(self):
     super().__init__()
 
+    self.config = RawConfigParser()
+    self.config.read(CLIENT_PATHS)
+
     self._server_input = QLineEdit()
     self._server_input.setFixedWidth(250)
-    self._server_input.setText(config('SERVER', default=None))
+    self._server_input.setText(self.config['client'].get('server', None))
 
     self._user_input = QLineEdit()
     self._user_input.setFixedWidth(250)
-    self._user_input.setText(config('USERNAME', default=None))
+    self._user_input.setText(self.config['client'].get('username', None))
 
     password_box = QLineEdit()
     password_box.setFixedWidth(250)
     password_box.setEchoMode(QLineEdit.Password)
-    password_box.setText(config('PASSWORD', default=None))
+    password_box.setText(self.config['client'].get('password', None))
     self._password_input = password_box
 
+    self._verify_ssl_checkbox = QCheckBox("Verify SSL")
+    self._verify_ssl_checkbox.setChecked(self.config['client'].getboolean('verify_ssl', True))
     self._filter_checkbox = QCheckBox("SPICE-capable only (slow!)")
+    self._filter_checkbox.setChecked(self.config['gui'].getboolean('spice_filter', False))
     
     self._fetch_button = QPushButton()
     self._update_button_to_default()
@@ -69,6 +78,7 @@ class Gui(QDialog):
     layout.addRow(QLabel("Server: "), self._server_input)
     layout.addRow(QLabel("Username:"), self._user_input)
     layout.addRow(QLabel("Password:"), self._password_input)
+    layout.addRow(self._verify_ssl_checkbox)
     layout.addRow(self._filter_checkbox)
     layout.addRow(self._fetch_button)
 
@@ -98,6 +108,7 @@ class Gui(QDialog):
     self._vm_dropdown.clear()
     self._vm_dropdown.addItems(sorted(["{}-{}".format(vm['vmid'], vm['name']) for vm in vms]))
     self._vm_dropdown.setEnabled(True)
+    self._write_config()
 
   def _update_button_to_loading(self):
     self._fetch_button.setText("Loading...")
@@ -122,9 +133,20 @@ class Gui(QDialog):
   def _connect_to_vm(self):
     vm_id = int(self._vm_dropdown.currentText().split("-")[0])
     self._client.spice_connect(
-      remote_viewer_bin_path=config('REMOTE_VIEWER_PATH', 'remote-viewer'), 
+      remote_viewer_bin_path=self.config['client'].get('remote_viewer_path', 'remote-viewer'), 
       vmid=vm_id
     )
+
+  def _write_config(self):
+    self.config.set('client', 'server', self._server_input.text())
+    self.config.set('client', 'username', self._user_input.text())
+    self.config.set('client', 'password', self._password_input.text())
+    self.config.set('client', 'verify_ssl', self._verify_ssl_checkbox.isChecked())
+    self.config.set('gui', 'spice_filter', self._filter_checkbox.isChecked())
+    for conffile in CLIENT_PATHS:
+      if os.path.exists(conffile):
+        with open(conffile, 'w') as configfile:
+          self.config.write(configfile)
 
 
 def run():
