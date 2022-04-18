@@ -1,6 +1,6 @@
 [project]
 name = "pve-vdi-client"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
     "requests==2.27.1",
     "proxmoxer==1.2.0",
