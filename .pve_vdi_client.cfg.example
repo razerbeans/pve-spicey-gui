@@ -1,0 +1,15 @@
+[client]
+# Proxmox server in which the client will communicate to via API
+server = pve.example.com
+# Username to use when connecting (be sure to include the realm! e.g. @pve, @pam, etc)
+username = thinclient@pve
+# Password for above user
+password = s00p3rs3cr3t
+# Whether to verify SSL certificate 
+verify_ssl = True
+# Path to the remote-viewer executable
+remote_viewer_path = /usr/local/bin/remote-viewer
+
+[gui]
+# Filter returned hosts by those SPICE capable (this is very slow for larger deployments)
+spice_filter = False
