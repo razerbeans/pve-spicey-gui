@@ -123,7 +123,7 @@ class Gui(QDialog):
   def _get_favorites(self):
     if self.favorites_section_name() not in self.config.sections():
       self.config.add_section(self.favorites_section_name())
-      self.config.set('favorites', '')
+      self.config.set(self.favorites_section_name(), 'favorites', '')
     return self.config.get(self.favorites_section_name(), 'favorites').split(",")
 
   def _fetch_vms(self):
