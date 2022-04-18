@@ -1,11 +1,11 @@
 [project]
 name = "pve-vdi-client"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
     "requests==2.27.1",
     "proxmoxer==1.2.0",
     # YOU NEED THIS, but requiring it on RPi causes errors.
-    #"PySide2==5.15.2.1",
+    "PySide2==5.15.2.1",
     "python-decouple==3.6",
 ]
 

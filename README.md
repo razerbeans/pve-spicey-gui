@@ -1,3 +1,21 @@
+# PVE SPICEy GUI (pve-vdi-client[-gui])
+PVE SPICEy GUI (or as it is on the command line, `pve-vdi-client` and `pve-vdi-client-gui`) is a command line and graphical interface for connecting to hosts leveraging SPICE in Proxmox Virtual Environments.
+
+## Features
+
+### GUI
+
+#### Cross-platform Graphical Interface 
+Leveraging Qt and PySide2, PVE SPICEy GUI provides a cross-platform graphical interface for connecting to hosts.
+
+![Mac OS GUI](docs/mac-screenshot.png)
+
+#### Favorites
+For those with large deployments, you can add/remove various VMs as favorites for quick access.
+
+#### Config Persistence
+The GUI and CLI leverage the same config file format interchangeably. Set it once in your home directory `~/.pve_vdi_client.cfg` and you're done! (see 'Configuration' below)
+
 # Installation
 
 ## Everyone (See "Development" below)
