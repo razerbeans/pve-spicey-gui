@@ -9,7 +9,7 @@ from PySide2.QtWidgets import (QApplication, QPushButton, QComboBox, QCheckBox,
                                QFormLayout, QMessageBox, QLabel, QLineEdit,
                                QPushButton, QVBoxLayout)
 
-from pve_vdi_client import CLIENT_PATHS
+from pve_vdi_client import CLIENT_PATHS, ConfigException
 from pve_vdi_client.vdi_client.client import Client
 
 class Gui(QDialog):
@@ -18,6 +18,8 @@ class Gui(QDialog):
 
     self.config = RawConfigParser()
     self.config.read(CLIENT_PATHS)
+    if not self.config.sections():
+      raise ConfigException("Configuration is empty! Please consult the documentation.")
 
     self._server_input = QLineEdit()
     self._server_input.setFixedWidth(250)
